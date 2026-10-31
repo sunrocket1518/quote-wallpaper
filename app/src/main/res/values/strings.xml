@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">명언 배경화면</string>
+    <string name="quotes_title">명언 고르기</string>
+    <string name="preview_desc">지금 배경화면 미리보기</string>
+    <string name="preview_empty">아직 배경화면으로 설정한 명언이 없어요.\n아래 버튼을 눌러 시작해 보세요.</string>
+    <string name="change_now">다른 명언으로 지금 바꾸기</string>
+    <string name="label_category">분야</string>
+    <string name="label_source">명언 종류</string>
+    <string name="label_target">적용할 화면</string>
+    <string name="label_interval">자동 변경 주기</string>
+    <string name="auto_switch">자동으로 바꾸기</string>
+    <string name="open_quotes">명언 고르기 · 내 명언함</string>
+    <string name="tab_famous">추천 명언</string>
+    <string name="tab_mine">내 명언함</string>
+    <string name="search_hint">명언이나 작가 검색</string>
+    <string name="add_quote">+ 명언 쓰기</string>
+    <string name="input_text_hint">명언 내용</string>
+    <string name="input_author_hint">작성자 (비우면 \'나\')</string>
+</resources>
