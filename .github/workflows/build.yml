@@ -1,0 +1,61 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unpack uploaded project.zip
+        run: |
+          if [ -f project.zip ]; then
+            unzip -o project.zip
+            rm project.zip
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "Unpack project.zip"
+            git push
+          fi
+
+      - name: Check project
+        id: check
+        run: |
+          if [ -f settings.gradle.kts ]; then echo "ready=true" >> "$GITHUB_OUTPUT"; else echo "No project yet. Upload project.zip."; fi
+
+      - uses: actions/setup-java@v4
+        if: steps.check.outputs.ready == 'true'
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+        if: steps.check.outputs.ready == 'true'
+        with:
+          gradle-version: "8.9"
+
+      - name: Build release APK
+        if: steps.check.outputs.ready == 'true'
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+          VERSION_NAME: 0.1.${{ github.run_number }}
+        run: |
+          gradle assembleRelease --no-daemon
+          cp app/build/outputs/apk/release/app-release.apk quote-wallpaper.apk
+
+      - name: Publish release
+        if: steps.check.outputs.ready == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.1.${{ github.run_number }}
+          name: 명언 배경화면 v0.1.${{ github.run_number }}
+          files: quote-wallpaper.apk
+          make_latest: true
