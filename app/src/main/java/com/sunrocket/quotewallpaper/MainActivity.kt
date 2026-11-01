@@ -65,6 +65,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnChange.setOnClickListener { changeNow() }
+        findViewById<Button>(R.id.btnDesign).setOnClickListener {
+            startActivity(Intent(this, DesignActivity::class.java))
+        }
         findViewById<Button>(R.id.btnQuotes).setOnClickListener {
             startActivity(Intent(this, QuotesActivity::class.java))
         }

@@ -23,5 +23,10 @@
             android:name=".QuotesActivity"
             android:exported="false"
             android:label="@string/quotes_title" />
+
+        <activity
+            android:name=".DesignActivity"
+            android:exported="false"
+            android:label="@string/design_title" />
     </application>
 </manifest>

@@ -17,4 +17,15 @@
     <string name="add_quote">+ 명언 쓰기</string>
     <string name="input_text_hint">명언 내용</string>
     <string name="input_author_hint">작성자 (비우면 \'나\')</string>
+    <string name="design_title">배경화면 꾸미기</string>
+    <string name="open_design">배경화면 꾸미기 (글꼴 · 배경 · 위치)</string>
+    <string name="label_bg">배경</string>
+    <string name="pick_photo">사진 다시 고르기</string>
+    <string name="label_font">글꼴</string>
+    <string name="label_size">글자 크기</string>
+    <string name="label_position">위치</string>
+    <string name="label_align">정렬</string>
+    <string name="quote_mark">큰따옴표 장식</string>
+    <string name="date_line">날짜 · 분야 표시</string>
+    <string name="apply_design">이 디자인으로 배경화면 적용</string>
 </resources>
