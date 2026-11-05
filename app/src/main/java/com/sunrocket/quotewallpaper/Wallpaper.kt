@@ -205,9 +205,14 @@ object WallpaperPainter {
         photoFile(context).outputStream().use { out.compress(Bitmap.CompressFormat.JPEG, 90, it) }
     }
 
+    /**
+     * 화면 크기 (항상 세로 기준: 짧은 쪽이 가로).
+     * 폰을 눕혀 둔 상태에서 자동 변경이 돌면 가로로 긴 그림이 만들어지고,
+     * 그걸 세로 화면에 맞추느라 확대·잘림이 생겨 글자가 몇 단어만 보였음.
+     */
     fun screenSize(context: Context): Pair<Int, Int> {
         val wm = context.getSystemService(WindowManager::class.java)
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        val (w, h) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val b = wm.maximumWindowMetrics.bounds
             b.width() to b.height()
         } else {
@@ -216,6 +221,7 @@ object WallpaperPainter {
             wm.defaultDisplay.getRealMetrics(dm)
             dm.widthPixels to dm.heightPixels
         }
+        return minOf(w, h).coerceAtLeast(1) to maxOf(w, h).coerceAtLeast(1)
     }
 }
 
