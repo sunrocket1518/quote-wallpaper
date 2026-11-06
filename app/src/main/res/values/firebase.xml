@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Firebase 연결 값 (google-services.json 대신). 앱에 들어가는 공개용 값이다. -->
+<resources>
+    <string name="google_app_id" translatable="false">1:448351644315:android:1592f8ccac9cdba453f43e</string>
+    <string name="google_api_key" translatable="false">AIzaSyCETjsw4uQGMmHtjGopx-5vCWl_U4s3O9o</string>
+    <string name="gcm_defaultSenderId" translatable="false">448351644315</string>
+    <string name="project_id" translatable="false">quote-wallpaper-873ca</string>
+    <string name="default_web_client_id" translatable="false">448351644315-gjl5s1h1sk9gp5q8fe8abd7s2p7f76ff.apps.googleusercontent.com</string>
+</resources>

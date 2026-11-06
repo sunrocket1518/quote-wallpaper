@@ -13,10 +13,13 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.materialswitch.MaterialSwitch
+import kotlinx.coroutines.launch
 
 class QuotesActivity : AppCompatActivity() {
     private lateinit var repo: QuoteRepository
@@ -77,11 +80,19 @@ class QuotesActivity : AppCompatActivity() {
     }
 
     private fun onQuoteTap(quote: Quote) {
-        val options = if (quote.mine) arrayOf("지금 배경화면으로 설정", "삭제") else arrayOf("지금 배경화면으로 설정")
+        val options = mutableListOf("지금 배경화면으로 설정")
+        if (quote.mine) {
+            options += if (quote.isPublic) "비공개로 바꾸기" else "공개하기 (다른 사람도 볼 수 있음)"
+            options += "삭제"
+        }
         MaterialAlertDialogBuilder(this)
             .setTitle(quote.text)
-            .setItems(options) { _, which ->
-                if (which == 0) applyQuote(quote) else confirmDelete(quote)
+            .setItems(options.toTypedArray()) { _, which ->
+                when (options[which]) {
+                    "지금 배경화면으로 설정" -> applyQuote(quote)
+                    "삭제" -> confirmDelete(quote)
+                    else -> setPublic(quote, !quote.isPublic)
+                }
             }
             .show()
     }
@@ -97,10 +108,32 @@ class QuotesActivity : AppCompatActivity() {
         }.start()
     }
 
+    private fun setPublic(quote: Quote, makePublic: Boolean) {
+        if (Cloud.uid() == null) {
+            Toast.makeText(this, "공개하려면 먼저 '명언 둘러보기'에서 로그인해 주세요", Toast.LENGTH_LONG).show()
+            return
+        }
+        lifecycleScope.launch {
+            val result = runCatching {
+                if (makePublic) Cloud.publish(quote) else Cloud.unpublish(quote.id)
+            }
+            if (result.isSuccess) {
+                repo.setPublic(quote.id, makePublic)
+                reload()
+                toast(if (makePublic) "공개했어요. 다른 사람도 볼 수 있어요" else "비공개로 바꿨어요")
+            } else {
+                toast("서버에 저장하지 못했어요. 인터넷 연결을 확인해 주세요")
+            }
+        }
+    }
+
     private fun confirmDelete(quote: Quote) {
         MaterialAlertDialogBuilder(this)
-            .setMessage("이 명언을 내 명언함에서 지울까요?")
+            .setMessage(if (quote.isPublic) "이 명언을 지울까요? 공개된 명언도 같이 지워져요." else "이 명언을 내 명언함에서 지울까요?")
             .setPositiveButton("삭제") { _, _ ->
+                if (quote.isPublic) {
+                    lifecycleScope.launch { runCatching { Cloud.unpublish(quote.id) } }
+                }
                 repo.deleteMine(quote.id)
                 reload()
             }
@@ -113,26 +146,29 @@ class QuotesActivity : AppCompatActivity() {
         val inputText = view.findViewById<EditText>(R.id.inputText)
         val inputAuthor = view.findViewById<EditText>(R.id.inputAuthor)
         val inputCategory = view.findViewById<Spinner>(R.id.inputCategory)
+        val inputPublic = view.findViewById<MaterialSwitch>(R.id.inputPublic)
         inputCategory.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, Categories.LIST)
 
         MaterialAlertDialogBuilder(this)
             .setTitle("명언 쓰기")
             .setView(view)
             .setPositiveButton("저장") { _, _ ->
-                val text = inputText.text.toString().trim()
+                val text = inputText.text.toString().trim().take(200)
                 if (text.isEmpty()) {
-                    Toast.makeText(this, "명언 내용을 입력해 주세요", Toast.LENGTH_SHORT).show()
+                    toast("명언 내용을 입력해 주세요")
                     return@setPositiveButton
                 }
-                val author = inputAuthor.text.toString().trim().ifEmpty { "나" }
+                val author = inputAuthor.text.toString().trim().take(50).ifEmpty { "나" }
                 val category = Categories.LIST[inputCategory.selectedItemPosition.coerceAtLeast(0)]
-                repo.addMine(text, author, category)
+                val quote = repo.addMine(text, author, category)
                 if (!showMine) toggle.check(R.id.btnMine) else reload()
-                Toast.makeText(this, "내 명언함에 저장했어요", Toast.LENGTH_SHORT).show()
+                if (inputPublic.isChecked) setPublic(quote, true) else toast("내 명언함에 저장했어요")
             }
             .setNegativeButton("취소", null)
             .show()
     }
+
+    private fun toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 }
 
 class QuoteAdapter(private val onTap: (Quote) -> Unit) : RecyclerView.Adapter<QuoteAdapter.Holder>() {
@@ -157,7 +193,32 @@ class QuoteAdapter(private val onTap: (Quote) -> Unit) : RecyclerView.Adapter<Qu
     override fun onBindViewHolder(holder: Holder, position: Int) {
         val quote = items[position]
         holder.text.text = quote.text
-        holder.meta.text = "— ${quote.author} · ${quote.category}"
+        val visibility = if (!quote.mine) "" else if (quote.isPublic) " · 공개" else " · 비공개"
+        holder.meta.text = "— ${quote.author} · ${quote.category}$visibility"
         holder.itemView.setOnClickListener { onTap(quote) }
+    }
+}
+
+class RemoteQuoteAdapter(private val onTap: (RemoteQuote) -> Unit) :
+    RecyclerView.Adapter<QuoteAdapter.Holder>() {
+    private var items: List<RemoteQuote> = emptyList()
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun submit(list: List<RemoteQuote>) {
+        items = list
+        notifyDataSetChanged()
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): QuoteAdapter.Holder =
+        QuoteAdapter.Holder(LayoutInflater.from(parent.context).inflate(R.layout.item_quote, parent, false))
+
+    override fun getItemCount(): Int = items.size
+
+    override fun onBindViewHolder(holder: QuoteAdapter.Holder, position: Int) {
+        val q = items[position]
+        holder.text.text = q.text
+        val author = q.author.ifBlank { q.ownerName }
+        holder.meta.text = "— $author · ${q.category} · 올린 사람 ${q.ownerName}"
+        holder.itemView.setOnClickListener { onTap(q) }
     }
 }

@@ -28,4 +28,25 @@
     <string name="quote_mark">큰따옴표 장식</string>
     <string name="date_line">날짜 · 분야 표시</string>
     <string name="apply_design">이 디자인으로 배경화면 적용</string>
+    <string name="input_public">공개하기 (다른 사람도 볼 수 있음)</string>
+    <string name="open_community">명언 둘러보기 · 팔로우</string>
+    <string name="community_title">명언 둘러보기</string>
+    <string name="community_intro">다른 사람들이 공개한 명언을 보고,\n마음에 드는 사람을 팔로우할 수 있어요.\n내 명언을 공개하려면 로그인이 필요해요.</string>
+    <string name="sign_in_google">구글 계정으로 로그인</string>
+    <string name="sign_in_note">로그인하면 구글 계정 이름이 처음 이름으로 쓰여요. 나중에 바꿀 수 있어요.</string>
+    <string name="my_profile">내 프로필</string>
+    <string name="find_people">사람 찾기</string>
+    <string name="tab_latest">최신 명언</string>
+    <string name="tab_following">팔로우</string>
+    <string name="remote_search_hint">공개 명언 검색 (입력 후 검색 키)</string>
+    <string name="profile_title">프로필</string>
+    <string name="follow">팔로우</string>
+    <string name="rename">이름 바꾸기</string>
+    <string name="sign_out">로그아웃</string>
+    <string name="show_hidden">숨긴 사람·명언 다시 보기</string>
+    <string name="hide_user">이 사람 숨기기</string>
+    <string name="public_quotes">공개한 명언</string>
+    <string name="user_search_title">사람 찾기</string>
+    <string name="user_search_hint">이름 (입력 후 검색 키)</string>
+    <string name="user_search_intro">이름의 앞부분을 입력하고 검색 키를 눌러 보세요</string>
 </resources>

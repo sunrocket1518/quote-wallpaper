@@ -1,0 +1,56 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isMe(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // 사용자 이름
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow create, update: if isMe(uid)
+        && request.resource.data.keys().hasOnly(['name', 'nameLower', 'updatedAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 20;
+      allow delete: if isMe(uid);
+
+      // 내가 팔로우한 사람 목록 (나만 고칠 수 있음)
+      match /following/{target} {
+        allow read: if signedIn();
+        allow create, delete: if isMe(uid) && target != uid;
+      }
+    }
+
+    // 공개 명언
+    match /quotes/{id} {
+      function validQuote() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['text', 'author', 'category', 'ownerUid', 'ownerName', 'createdAt', 'keywords'])
+          && d.ownerUid == request.auth.uid
+          && d.text is string && d.text.size() > 0 && d.text.size() <= 200
+          && d.author is string && d.author.size() <= 50
+          && d.category in ['공부', '일', '효율', '인생']
+          && d.ownerName is string && d.ownerName.size() <= 20
+          && d.keywords is list && d.keywords.size() <= 100;
+      }
+
+      allow read: if signedIn();
+      allow create: if signedIn() && validQuote();
+      allow update: if signedIn() && resource.data.ownerUid == request.auth.uid && validQuote();
+      allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
+    }
+
+    // 신고 (보내기만 가능, 읽기는 콘솔에서만)
+    match /reports/{id} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['quoteId', 'reporterUid', 'reason', 'createdAt'])
+        && request.resource.data.reporterUid == request.auth.uid;
+    }
+  }
+}

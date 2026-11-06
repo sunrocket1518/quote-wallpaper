@@ -230,7 +230,9 @@ object Changer {
     /** 설정에 맞는 다른 명언으로 바꿈. 맞는 명언이 없으면 null */
     fun changeRandom(context: Context): Quote? {
         val settings = Settings(context)
-        val quote = QuoteRepository(context).pick(settings, settings.currentId) ?: return null
+        val repo = QuoteRepository(context)
+        if (settings.source == Settings.SOURCE_FOLLOWING) refreshFollowing(context)
+        val quote = repo.pick(settings, settings.currentId) ?: return null
         setQuote(context, quote)
         return quote
     }
@@ -239,6 +241,14 @@ object Changer {
         val settings = Settings(context)
         WallpaperPainter.apply(context, quote, settings.target)
         settings.currentId = quote.id
+        settings.currentQuote = quote
+    }
+
+    /** 팔로우한 사람들의 새 명언을 받아 폰에 저장 (인터넷이 안 되면 예전 것 그대로 씀) */
+    private fun refreshFollowing(context: Context) {
+        val list = Cloud.followingFeedBlocking() ?: return
+        val settings = Settings(context)
+        QuoteRepository(context).saveFollowingCache(settings.visible(list).map { it.toQuote() })
     }
 }
 

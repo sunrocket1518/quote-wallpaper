@@ -57,6 +57,13 @@
             android:layout_marginTop="8dp"
             android:text="@string/open_design" />
 
+        <Button
+            android:id="@+id/btnCommunity"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/open_community" />
+
         <TextView
             style="@style/Label"
             android:text="@string/label_category" />

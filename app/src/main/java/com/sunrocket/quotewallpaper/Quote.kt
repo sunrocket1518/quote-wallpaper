@@ -6,6 +6,7 @@ data class Quote(
     val author: String,
     val category: String,
     val mine: Boolean,
+    val isPublic: Boolean = false,
 )
 
 object Categories {

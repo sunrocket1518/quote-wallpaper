@@ -68,6 +68,9 @@ class MainActivity : AppCompatActivity() {
         val versionName = runCatching { packageManager.getPackageInfo(packageName, 0).versionName }.getOrNull()
         findViewById<TextView>(R.id.versionText).text = "버전 ${versionName ?: "?"}"
 
+        findViewById<Button>(R.id.btnCommunity).setOnClickListener {
+            startActivity(Intent(this, CommunityActivity::class.java))
+        }
         findViewById<Button>(R.id.btnDesign).setOnClickListener {
             startActivity(Intent(this, DesignActivity::class.java))
         }
